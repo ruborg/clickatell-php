@@ -37,8 +37,12 @@ The default transport is HTTP.
 ``` php
 $clickatell = new Clickatell($username, $password, $apiID);
 
-$clickatell->sendMessage(1111111111, "My Message");
+$response = $clickatell->sendMessage(1111111111, "My Message");
+
+// {"result":{"status":"success|false","response":[{"apiMsgId":"string|false","to":"xxxxxxxxxxx","error":"string|false"}]}}
 ```
+
+The response you get back will be JSON (as indicated above) that will contain two keys (status, response). The 'response' key will be an array of messages and their message ID's (even if you just specified one number). The response for sending messages will always be an array so that consistency between different packets can be maintained.
 
 You can specify a different output using the Clickatell constructor or using the setTransport() method.
 
@@ -120,6 +124,12 @@ $clickatell = new Clickatell('[username]', '[password]', [api_id], Clickatell::H
 
 $clickatell->on('request', function($data) {
 	// $data = The parameters passed to the request
+
+    // The data array is passed by reference so you can change
+    // any of the values before sending.
+
+    // $data['message'] = "My Message Override."
+    // $data['extra'] = array("mo" => true);
 	print_r($data);
 });
 
@@ -135,8 +145,14 @@ $clickatell->on('response', function($data) {
 ?>
 ```
 
+5. Dealing with unsupported parameters
+--------------------------------------
 
-5. Callbacks
+Some parameters are not supported by default, but can still be passed to the individual
+
+
+
+6. Callbacks
 ---------------
 
 You can listen to clickatell callbacks by using the `parseCallback();` function. It's a helper function

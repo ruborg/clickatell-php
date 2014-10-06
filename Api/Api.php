@@ -62,6 +62,9 @@ abstract class Api
         'concatenation' => 'concat',
         'max_credits' => 'max_credits',
         'required_features' => 'req_feat',
+        'unicode' => 'unicode',
+        'mobile_originated' => 'mo',
+        'client_message_id' => 'cliMsgId'
     );
 
     /**
@@ -193,21 +196,28 @@ abstract class Api
      * API calls sort of have the same response. So this serves as the generic
      * extracter. It can be overwritten for custom Transports.
      *
-     * @param string $response Response from API
+     * @param string  $response Response from API
+     * @param boolean $multi    Should this result return an array of values
      *
      * @return array
      */
-    protected function extract($response)
+    protected function extract($response, $multi = false)
     {
-        preg_match_all("/([A-Za-z]+):((.(?![A-Za-z]+:))*)/", $response, $matches);
-
+        $lines = explode("\n", trim($response, "\n"));
         $result = array();
 
-        foreach ($matches[1] as $index => $status) {
-            $result[$status] = trim($matches[2][$index]);
+        foreach ($lines as $line) {
+            preg_match_all("/([A-Za-z]+):((.(?![A-Za-z]+:))*)/", $line, $matches);
+
+            $row = array();
+            foreach ($matches[1] as $index => $status) {
+                $row[$status] = trim($matches[2][$index]);
+            }
+
+            $result[] = $row;
         }
 
-        return $result;
+        return $multi ? $result : current($result);
     }
 
     /**
@@ -284,16 +294,18 @@ abstract class Api
     public function call($method, array $args)
     {
         // Trigger request event
+        $mapArgs = $this->_mapArgs($method, $args);
+
         $eventArgs = array_merge(
             array('call' => $method),
-            array('request' => $this->_mapArgs($method, $args))
+            array('request' => &$mapArgs)
         );
 
         Event::trigger('request', $eventArgs);
 
         // Execute the method
         $result = $this->_translate->translate(
-            call_user_func_array(array($this, $method), $args)
+            call_user_func_array(array($this, $method), $mapArgs)
         );
 
         // Trigger response event
