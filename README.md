@@ -1,5 +1,10 @@
-Clickatell SMS Messenger Library
+Clickatell PHP Library
 ================================
+
+You can see our other libraries and more documentation at the [Clickatell APIs and Libraries Project](http://clickatell.github.io/).
+
+------------------------------------
+
 
 Master: [![Build Status](https://secure.travis-ci.org/arcturial/clickatell.png?branch=master)](http://travis-ci.org/arcturial/clickatell)
 
