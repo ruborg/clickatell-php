@@ -34,6 +34,7 @@ abstract class Clickatell implements TransportInterface
     const HTTP_DELETE   = "DELETE";
 
     private $secure = false;
+    private $agent = "ClickatellPHP/2.1";
 
     /**
      * This function serves as the "request" or "invoke" function. This will in turn
@@ -88,11 +89,14 @@ abstract class Clickatell implements TransportInterface
         $uri = ($this->secure ? 'https' : 'http') . '://' . $host . "/" . $uri;
         $method == "GET" && $uri = $uri . "?"  . $data;
 
+        $curlInfo = curl_version();
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $uri);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->agent . ' curl/' . $curlInfo['version'] . ' PHP/' . phpversion());
         ($method == "POST") && curl_setopt($ch, CURLOPT_POST, 1) && curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 
         $result = curl_exec($ch);
@@ -102,38 +106,15 @@ abstract class Clickatell implements TransportInterface
     }
 
     /**
-     * Triggers if a clickatell MT callback has been received by the page.
+     * Set the user agent for the CURL adapter.
      *
-     * @param Closure $closure The callable function
+     * @param string $agent The agent string
      *
-     * @return boolean
+     * @return Clickatell
      */
-    /*
-    public static function parseCallback(Closure $closure)
+    public function setUserAgent($agent)
     {
-        $required = array_flip(
-            array(
-                'apiMsgId',
-                'cliMsgId',
-                'to',
-                'timestamp',
-                'from',
-                'status',
-                'charge'
-            )
-        );
-
-        $values = array_intersect_key($_GET, $required);
-        $diff = array_diff_key($required, $values);
-
-        // If there are no difference, then it means the callback
-        // passed all the required values.
-        if (empty($diff))
-        {
-            return call_user_func_array($closure, array($values));
-        }
-
-        return false;
+        $this->agent = $agent;
+        return $this;
     }
-    */
 }
