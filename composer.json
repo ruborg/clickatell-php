@@ -9,6 +9,7 @@
             "name": "Chris Brand"
         }
     ],
+    "version": "3.0.0",
     "require": {
         "php": ">=5.5"
     },
